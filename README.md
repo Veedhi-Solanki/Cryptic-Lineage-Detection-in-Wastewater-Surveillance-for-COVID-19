@@ -1,8 +1,3 @@
-# Cryptic-Lineage-Detection-in-Wastewater-Surveillance-for-COVID-19
-Here's the updated README file with the mentioned detail at the beginning:
-
----
-
 # Cryptic Lineage Detection in Wastewater COVID-19 Surveillance
 
 This repository contains a series of scripts designed for the detection of cryptic SARS-CoV-2 lineages in wastewater samples. The scripts are organized and numbered according to the order in which they should be executed for both Ontario and NYC workflows. 
