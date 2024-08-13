@@ -60,5 +60,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 For questions or further information, please contact Veedhi Solanki at veedhisolanki13579@gmail.com.
 
 ---
-
-This README now includes a clear note at the beginning that highlights the similarity between the files for both workflows, with the exception of the tree-building step.
