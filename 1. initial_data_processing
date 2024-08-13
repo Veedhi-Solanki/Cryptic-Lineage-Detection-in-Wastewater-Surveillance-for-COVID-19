@@ -1,0 +1,46 @@
+# Loop through each directory in the current folder
+for dir in */; do
+  # Extract the base name of the directory (sample name)
+  sample=$(basename "$dir")
+  # Move all FASTQ files within the directory to the current directory and rename them
+  mv "$dir"/*.fastq "./${sample}_file.fastq"
+done
+
+# Loop through all R1 FASTQ files and merge R1 and R2 files for each sample
+for sample in $(ls *_R1_001.fastq_file.fastq | sed 's/_R1_001.fastq_file.fastq//'); do
+  echo "Processing sample: $sample"
+  # Concatenate R1 and R2 FASTQ files into a single merged file
+  cat "${sample}_R1_001.fastq_file.fastq" "${sample}_R2_001.fastq_file.fastq" > "${sample}_merged.fastq"
+done
+
+# Loop through all merged FASTQ files and dereplicate sequences
+for sample in $(ls *_merged.fastq | sed 's/_merged.fastq//'); do
+  echo "Dereplicating ${sample}..."
+  # Run the dereplication script to remove redundant sequences
+  python /mnt/d/covid\ data/derep.py "${sample}_merged.fastq" "${sample}_derep.fastq" 10
+done
+
+# Loop through all dereplicated FASTQ files and map sequences using Minimap2
+for sample in $(ls *_derep.fastq | sed 's/_derep.fastq//'); do
+  echo "Mapping sequences for ${sample}..."
+  # Map the dereplicated sequences to the reference genome using Minimap2
+  minimap2 -ax sr /mnt/d/covid\ data/NC_045512.2.fasta "${sample}_derep.fastq" > "${sample}_mapped.sam"
+done
+
+# Loop through all dereplicated FASTQ files and align sequences using Minimap2
+for sample in $(ls *_derep.fastq | sed 's/_derep.fastq//'); do
+    echo "Aligning ${sample} with Minimap2..."
+    # Align the dereplicated sequences to the reference genome using Minimap2
+    minimap2 -ax sr /mnt/d/covid\ data/NC_045512.2.fasta "${sample}_derep.fastq" > "${sample}_aligned.sam"
+done
+
+# Loop through all aligned SAM files and process them with SAMtools
+for sample in $(ls *_aligned.sam | sed 's/_aligned.sam//'); do
+    echo "Processing ${sample}..."
+    # Convert SAM to BAM format
+    samtools view -Sb "${sample}_aligned.sam" > "${sample}_aligned.bam"
+    # Sort the BAM file
+    samtools sort "${sample}_aligned.bam" -o "${sample}_sorted.bam"
+    # Index the sorted BAM file
+    samtools index "${sample}_sorted.bam"
+done
